@@ -1,12 +1,18 @@
+#!/debian/bin/env python3
+
 import os
+import smtplib
+from email.mime.text import MIMEText
 import re
 import time
 from datetime import datetime, time as time2
 
-CARPETA_COMPARTIDA = "/home/debian/Documentos/Compartida"
+CARPETA_COMPARTIDA = "/home/debian/Dropbox/Compartida"
+ARCHIVO_MAIL = "/home/debian/Documentos/Daemon/Config/mail.txt"
 ARCHIVO_HORARIOS = "/home/debian/Documentos/Daemon/Config/horarios_suspension.txt"
 ARCHIVO_EXPRESION_REGULAR = "/home/debian/Documentos/Daemon/Config/expresion_regular.txt"
 ARCHIVO_NOMBRES_PROCESADOS = "/home/debian/Documentos/Daemon/nombres_procesados.txt"
+ARCHIVO_LOG = "/var/log/tp1-daemon.log"
 
 def leer_archivo(archivo):
     data = None
@@ -31,6 +37,22 @@ def leer_horarios_suspension(archivo):
         print(f"No se encontró el archivo {archivo}.")
     return horarios_suspension
 
+# Función para enviar correo electrónico
+def enviar_correo(destinatario, asunto, cuerpo):
+    try:
+        servidor_smtp = smtplib.SMTP('smtp.office365.com', 587)
+        servidor_smtp.starttls()
+        servidor_smtp.login('tp1daemon@hotmail.com', 'daemonSLtp1')
+        mensaje = MIMEText(cuerpo)
+        mensaje['From'] = 'tp1daemon@hotmail.com'
+        mensaje['Subject'] = asunto
+        mensaje['To'] = destinatario
+        servidor_smtp.send_message(mensaje)
+        print("Se envió correo a: ", destinatario)
+        servidor_smtp.quit()
+    except Exception as e:
+        print(f"Error al enviar el correo: {e}")
+
 # Función para eliminar un archivo
 def eliminar_archivo(archivo):
     try:
@@ -41,9 +63,20 @@ def eliminar_archivo(archivo):
     except Exception as e:
         print(f"Error al eliminar el archivo {archivo}: {e}")
 
+# Función para escribir en un archivo
+def escribir_en_archivo(ubicacion, texto):
+    with open(ubicacion, 'a') as f:
+        f.write(texto + '\n')
+
+def escribir_log(cuerpo):
+    fecha_formateada = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    mensaje = fecha_formateada + " - " + cuerpo
+    escribir_en_archivo(ARCHIVO_LOG, mensaje)
+
 # Función para monitorear la carpeta compartida
 def main():
-    # Leer el correo electrónico y la expresión regular desde los archivos de configuración
+    # Leer la lista de correos electrónicos, el horario y la expresión regular desde los archivos de configuración
+    mail = leer_archivo(ARCHIVO_MAIL)[0]
     horarios_suspension = leer_horarios_suspension(ARCHIVO_HORARIOS)
     expresion_regular = leer_archivo(ARCHIVO_EXPRESION_REGULAR)[0]
     nombres_procesados = leer_archivo(ARCHIVO_NOMBRES_PROCESADOS)
@@ -65,11 +98,15 @@ def main():
                 if os.path.isfile(ruta_archivo) and (archivo not in nombres_procesados) and re.match(expresion_regular, archivo):
                     print(f"Nuevo archivo encontrado: {archivo}. Enviando correo electrónico...")
                     # Enviar correo electrónico a cada destinatario
+                    asunto = f"Nuevo archivo: {archivo}"
+                    cuerpo = f"Se ha encontrado un nuevo archivo en la carpeta compartida: {archivo}."
+                    enviar_correo(mail, asunto, cuerpo)
                     # Agregar el archivo a la lista de archivos procesados
                     nombres_procesados.append(archivo)
                     # Escribir el nombre del archivo en el archivo de nombres procesados
-                    with open(ARCHIVO_NOMBRES_PROCESADOS, 'a') as f:
-                        f.write(archivo + '\n')
+                    escribir_en_archivo(ARCHIVO_NOMBRES_PROCESADOS, archivo)
+                    # Log
+                    escribir_log(cuerpo)
 
                 # Verificar si el archivo cumple con la expresión regular
                 if expresion_regular and not re.match(expresion_regular, archivo):
@@ -77,6 +114,11 @@ def main():
                     # Eliminar el archivo
                     os.remove(ruta_archivo)
                     # Enviar correo electrónico a cada destinatario
+                    asunto = f"Archivo no válido: {archivo}"
+                    cuerpo = f"El archivo {archivo} no cumple con la expresión regular y ha sido eliminado."
+                    enviar_correo(mail, asunto, cuerpo)
+                    # Log
+                    escribir_log(cuerpo)
 
             # Dormir durante un intervalo de tiempo antes de verificar nuevamente (por ejemplo, 5 segundos)
             time.sleep(5)
