@@ -7,6 +7,8 @@ Este proyecto consiste en un daemon diseñado para monitorear una carpeta compar
 
 • Python 3.x
 
+• Git
+
 • Acceso a Internet para enviar correos electrónicos (SMTP).
 
 • Permisos de lectura y escritura en la carpeta compartida, en el archivo de configuración del daemon y en el archivo de registro.
@@ -17,9 +19,27 @@ Este proyecto consiste en un daemon diseñado para monitorear una carpeta compar
 
     git clone https://github.com/Seba-Aguero/TP1-SL-Daemon.git
 
-• Asegurate de tener los archivos de configuración necesarios (mail.txt, horarios_suspension.txt, expresion_regular.txt) en el directorio Config.
+• Asegurate de tener los archivos de configuración necesarios (mail.txt, horarios_suspension.txt, expresion_regular.txt, carpeta_compartida.txt) en el directorio Config.
 
 • Adaptá los archivos de configuración según tus necesidades.
+
+• Asignale los permisos correspondientes al archivo nombres_procesados.txt.
+
+
+## Archivos de registro
+
+El daemon registra sus acciones en un archivo de registro llamado tp1-daemon.log, ubicado en /var/log. Este archivo contiene un registro de las detecciones de nuevos archivos y eliminaciones de archivos no válidos. Asegurate de contar con este archivo y asignarle los permisos necesarios.
+
+
+## Configuración
+
+• mail.txt: Archivo que contiene la dirección de correo electrónico a la que se enviarán las notificaciones.
+
+• horarios_suspension.txt: Archivo que contiene los horarios en los que el daemon estará en modo de suspensión temporal.
+
+• expresion_regular.txt: Archivo que contiene la expresión regular que deben cumplir los nombres de los archivos para ser admitidos.
+
+• carpeta_compartida.txt: Archivo que contiene la ruta hacia la carpeta compartida a monitorear.
 
 
 ## Uso
@@ -30,7 +50,7 @@ Nota: Adaptá las rutas a las que correspondan en tu PC.
 
 Ejecutá el daemon con el siguiente comando:
 
-    python3 daemon.py
+    python3 Daemon.py
 
 El daemon comenzará a monitorear la carpeta compartida y enviará correos electrónicos cuando se detecten nuevos archivos.
 
@@ -45,8 +65,8 @@ Creá en el directorio '/etc/systemd/system/' el archivo 'tp1_sl_daemon.service'
 
     [Service]
     User=debian
-    WorkingDirectory=/home/debian/Documentos/Daemon
-    ExecStart=/usr/bin/python3 daemon.py
+    WorkingDirectory=/ruta/a/carpeta/donde/está/el/daemon
+    ExecStart=/usr/bin/python3 Daemon.py
 
     [Install]
     WantedBy=multi-user.target
@@ -74,19 +94,4 @@ Para detener el daemon:
 Para reiniciarlo:
 
     sudo systemctl restart tp1_sl_daemon.service
-
-
-## Configuración
-
-• mail.txt: Archivo que contiene la dirección de correo electrónico a la que se enviarán las notificaciones.
-
-• horarios_suspension.txt: Archivo que contiene los horarios en los que el daemon estará en modo de suspensión temporal.
-
-• expresion_regular.txt: Archivo que contiene la expresión regular que deben cumplir los nombres de los archivos para ser admitidos.
-
-
-## Archivos de registro
-
-El daemon registra sus acciones en un archivo de registro llamado tp1-daemon.log, ubicado en /var/log. Este archivo contiene un registro de las detecciones de nuevos archivos y eliminaciones de archivos no válidos.
-
 

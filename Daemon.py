@@ -7,11 +7,11 @@ import re
 import time
 from datetime import datetime, time as time2
 
-CARPETA_COMPARTIDA = "/home/debian/Dropbox/Compartida"
-ARCHIVO_MAIL = "/home/debian/Documentos/Daemon/Config/mail.txt"
-ARCHIVO_HORARIOS = "/home/debian/Documentos/Daemon/Config/horarios_suspension.txt"
-ARCHIVO_EXPRESION_REGULAR = "/home/debian/Documentos/Daemon/Config/expresion_regular.txt"
-ARCHIVO_NOMBRES_PROCESADOS = "/home/debian/Documentos/Daemon/nombres_procesados.txt"
+ARCHIVO_CARPETA_COMPARTIDA = "./Config/carpeta_compartida.txt"
+ARCHIVO_MAIL = "./Config/mail.txt"
+ARCHIVO_HORARIOS = "./Config/horarios_suspension.txt"
+ARCHIVO_EXPRESION_REGULAR = "./Config/expresion_regular.txt"
+ARCHIVO_NOMBRES_PROCESADOS = "./nombres_procesados.txt"
 ARCHIVO_LOG = "/var/log/tp1-daemon.log"
 
 def leer_archivo(archivo):
@@ -75,7 +75,7 @@ def escribir_log(cuerpo):
 
 # Función para monitorear la carpeta compartida
 def main():
-    # Leer la lista de correos electrónicos, el horario y la expresión regular desde los archivos de configuración
+    carpeta_compartida = leer_archivo(ARCHIVO_CARPETA_COMPARTIDA)[0]
     mail = leer_archivo(ARCHIVO_MAIL)[0]
     horarios_suspension = leer_horarios_suspension(ARCHIVO_HORARIOS)
     expresion_regular = leer_archivo(ARCHIVO_EXPRESION_REGULAR)[0]
@@ -91,8 +91,8 @@ def main():
                 time.sleep(60)  # Dormir por un minuto antes de verificar nuevamente
                 continue
             # Iterar sobre los archivos en la carpeta compartida
-            for archivo in os.listdir(CARPETA_COMPARTIDA):
-                ruta_archivo = os.path.join(CARPETA_COMPARTIDA, archivo)
+            for archivo in os.listdir(carpeta_compartida):
+                ruta_archivo = os.path.join(carpeta_compartida, archivo)
 
                 # Verificar si el archivo es nuevo y cumple con la expresión regular
                 if os.path.isfile(ruta_archivo) and (archivo not in nombres_procesados) and re.match(expresion_regular, archivo):
