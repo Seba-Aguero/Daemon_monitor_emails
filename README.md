@@ -1,4 +1,4 @@
-# TP1-SL-Daemon
+# Daemon de monitoreo, evaluación y envío de emails
 
 Este proyecto consiste en un daemon diseñado para monitorear una carpeta compartida, la cual en este caso está sincronizada con Dropbox, en busca de nuevos archivos que cumplan con ciertas condiciones específicas en sus nombres. Cuando se detecta un archivo nuevo que cumple con los criterios establecidos, se envía automáticamente un correo electrónico notificando su detección. Por otro lado, si un archivo recién agregado no cumple con las condiciones establecidas, será eliminado de la carpeta compartida, y también se enviará una notificación por correo electrónico informando sobre esta acción. En ambos casos, se mantiene un registro detallado de las acciones realizadas en un archivo de registro.
 
